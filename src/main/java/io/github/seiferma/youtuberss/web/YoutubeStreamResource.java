@@ -49,6 +49,8 @@ public class YoutubeStreamResource {
 						.map(s -> s.contains("broken pipe")).orElse(false);
 				if (isBrokenPipe) {
 					LOGGER.warn("Broken pipe during streaming of {}. Most probably, client left.", videoId);
+				} else {
+					throw e;
 				}
 			}
 		};

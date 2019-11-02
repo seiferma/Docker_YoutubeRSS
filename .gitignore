@@ -1,0 +1,3 @@
+db/
+target/
+src/main/resources/application-dev.yml

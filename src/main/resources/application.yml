@@ -1,0 +1,24 @@
+spring:
+   datasource:
+      url: jdbc:h2:file:./db/youtuberss;DB_CLOSE_ON_EXIT=FALSE;AUTO_RECONNECT=TRUE
+      driverClassName: org.h2.Driver
+      username: sa
+      password: sa
+   jpa:
+      database-platform: org.hibernate.dialect.H2Dialect
+      hibernate:
+         ddl-auto: update
+      open-in-view: false
+#   h2:
+#      console:
+#         enabled: true
+   mvc:
+      async:
+         request-timeout: 86400
+
+application:
+   minimum-update-minutes: 30
+   youtube:
+      executable: youtube-dl
+      apikey: invalid
+   url-pattern: http://localhost:8080/video/%s.mp4

@@ -5,17 +5,22 @@ import java.io.InputStream;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.config.annotation.AsyncSupportConfigurer;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -50,14 +55,13 @@ public class YoutubeStreamResource implements WebMvcConfigurer {
 			LOGGER.info("Starting streaming of {}", videoId);
 			try (InputStream bis = videoService.getVideoInputStream(videoId)) {
 				IOUtils.copy(bis, out);
-			} catch (IOException e) {
-				boolean isBrokenPipe = Optional.ofNullable(e.getMessage()).map(String::toLowerCase)
-						.map(s -> s.contains("broken pipe")).orElse(false);
-				if (isBrokenPipe) {
+			}
+			catch (IOException e) {
+				if (isBrokenPipeException(e)) {
 					LOGGER.warn("Broken pipe during streaming of {}. Most probably, client left.", videoId);
-				} else {
-					throw e;
+					return;
 				}
+				throw e;
 			}
 		};
 
@@ -71,4 +75,20 @@ public class YoutubeStreamResource implements WebMvcConfigurer {
 		WebMvcConfigurer.super.configureAsyncSupport(configurer);
 	}
 
+	@ExceptionHandler(IOException.class)
+	@ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
+	public Object handleBrokenPipeIOException(IOException ex, HttpServletRequest request) {
+	    if (isBrokenPipeException(ex)) {
+	        return null;
+	    } else {
+	        return new HttpEntity<>(ex.getMessage());
+	    }
+	}
+
+	private static boolean isBrokenPipeException(IOException ex) {
+		boolean isBrokenPipe = Optional.ofNullable(ExceptionUtils.getRootCauseMessage(ex)).map(String::toLowerCase)
+				.map(s -> s.contains("broken pipe")).orElse(false);
+		return isBrokenPipe;
+	}
+	
 }

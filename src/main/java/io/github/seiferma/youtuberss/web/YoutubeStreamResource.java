@@ -3,6 +3,7 @@ package io.github.seiferma.youtuberss.web;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Optional;
+import java.util.concurrent.Executors;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -11,17 +12,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.config.annotation.AsyncSupportConfigurer;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import io.github.seiferma.youtuberss.service.YoutubeVideoService;
 
 @RestController
 @RequestMapping("/video")
-public class YoutubeStreamResource {
+@EnableWebMvc
+public class YoutubeStreamResource implements WebMvcConfigurer {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(YoutubeStreamResource.class);
 	private static final String HEADER_CONTENT_DISPOSITION = "Content-Disposition";
@@ -56,6 +62,13 @@ public class YoutubeStreamResource {
 		};
 
 		return new ResponseEntity<StreamingResponseBody>(stream, HttpStatus.OK);
+	}
+
+	@Override
+	public void configureAsyncSupport(AsyncSupportConfigurer configurer) {
+		configurer.setDefaultTimeout(6*60*60*1000);
+		configurer.setTaskExecutor(new ConcurrentTaskExecutor(Executors.newFixedThreadPool(6)));
+		WebMvcConfigurer.super.configureAsyncSupport(configurer);
 	}
 
 }

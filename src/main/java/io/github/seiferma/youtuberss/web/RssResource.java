@@ -35,7 +35,7 @@ public class RssResource {
 		return rssViewFactory.build(channel);
 	}
 	
-	@GetMapping("/channelid/{channelId:[a-zA-Z0-9-_]}")
+	@GetMapping("/channelid/{channelId:[a-zA-Z0-9-_]+}")
 	public View getFeedForChannel(@PathVariable String channelId) {
 		LOGGER.info("Received RSS request by channel id {}", channelId);
 		YoutubeChannel channel = channelService.getByChannelId(channelId)

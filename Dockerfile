@@ -5,8 +5,8 @@ RUN mvn -f /tmp/pom.xml clean verify
 
 FROM alpine:latest AS dependency-downloader
 RUN apk --no-cache add wget
-RUN YTDL_VERSION=2021.12.17 && \
-    wget https://github.com/ytdl-org/youtube-dl/releases/download/$YTDL_VERSION/youtube-dl -O /tmp/youtube-dl && \
+RUN YTDL_VERSION=2023.02.17 && \
+    wget https://github.com/yt-dlp/yt-dlp/releases/download/$YTDL_VERSION/yt-dlp_linux -O /tmp/youtube-dl && \
     chmod +x /tmp/youtube-dl
 
 

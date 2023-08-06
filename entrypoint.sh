@@ -1,10 +1,14 @@
-#!/bin/bash
+#!/bin/sh
 
-USER_ID=${LOCAL_USER_ID:-9001}
+if [ -z "${LOCAL_USER_ID}" ]; then 
+    USER_ID=9001
+else 
+    USER_ID=${LOCAL_USER_ID}
+fi
 
 echo "Starting with UID : $USER_ID"
-useradd --shell /bin/bash -u $USER_ID -o -c "" -m user
+adduser -u $USER_ID -D user
 export HOME=/home/user
 chown user:user $HOME
 
-exec /usr/sbin/gosu user "$@"
+exec /sbin/su-exec user "$@"

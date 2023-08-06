@@ -6,18 +6,14 @@ RUN mvn -f /tmp/pom.xml clean verify
 FROM alpine:latest AS dependency-downloader
 RUN apk --no-cache add wget
 RUN YTDL_VERSION=2023.07.06 && \
-    wget https://github.com/yt-dlp/yt-dlp/releases/download/$YTDL_VERSION/yt-dlp_linux -O /tmp/youtube-dl && \
+    wget https://github.com/yt-dlp/yt-dlp/releases/download/$YTDL_VERSION/yt-dlp -O /tmp/youtube-dl && \
     chmod +x /tmp/youtube-dl
 
 
-FROM eclipse-temurin:17
+FROM alpine:latest
 
-RUN apt-get update && \
-    apt-get upgrade -y && \
-    apt-get install -y python3 gosu && \
-    rm -rf /var/lib/apt/lists/* && \
-    ln -s /usr/bin/python3 /usr/bin/python && \
-    gosu nobody true
+RUN apk upgrade --no-cache && \
+    apk add --no-cache openjdk17-jre-headless python3 su-exec
 
 WORKDIR /opt
 
